@@ -146,10 +146,10 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
             postgresClient,
             'invoiceAutomationRule'
         ); // 47
-        await migrateModel(mysqlClient, postgresClient, 'technician'); // 52  //TODO:
-        await migrateModel(mysqlClient, postgresClient, 'invoiceInspection'); // 48
         await migrateModel(mysqlClient, postgresClient, 'labor'); // 49
         await migrateModel(mysqlClient, postgresClient, 'invoiceItem'); // 50
+        await migrateModel(mysqlClient, postgresClient, 'technician'); // 52  //TODO:
+        await migrateModel(mysqlClient, postgresClient, 'invoiceInspection'); // 48
         await migrateModel(mysqlClient, postgresClient, 'invoicePhoto'); // 51
         await migrateModel(mysqlClient, postgresClient, 'invoiceRedo'); // 53
         await migrateModel(mysqlClient, postgresClient, 'invoiceTags'); // 54
