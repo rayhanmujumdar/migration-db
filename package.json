@@ -1,0 +1,25 @@
+{
+    "name": "migration-db",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "sync.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "generate:mysql": "prisma generate --schema=./mysql-schema/schema.prisma",
+        "generate:postgres": "prisma generate --schema=./postgres-schema/schema.prisma",
+        "migrate:mysql": "prisma migrate dev --schema=./mysql-schema/schema.prisma",
+        "migrate:postgres": "prisma migrate dev --schema=./postgres-schema/schema.prisma",
+        "push:mysql": "prisma db push --schema=./mysql-schema/schema.prisma",
+        "push:postgres": "prisma db push --schema=./postgres-schema/schema.prisma"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "prisma": "^6.11.1"
+    },
+    "dependencies": {
+        "@prisma/client": "^6.11.1"
+    }
+}
