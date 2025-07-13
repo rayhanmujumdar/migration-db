@@ -15,27 +15,27 @@ async function migrateModel(mysqlClient, postgresClient, modelName) {
         const modelData = await mysqlClient[modelName].findMany();
         console.log(`Found ${modelData.length}  ${modelName}s in MySQL`);
 
-        for (const vehicle of modelData) {
-            const vehicleExistsInPostgres = await postgresClient[
+        for (const model of modelData) {
+            const modelExistsInPostgres = await postgresClient[
                 modelName
             ].findUnique({
-                where: { id: vehicle.id },
+                where: { id: model.id },
             });
 
-            if (vehicleExistsInPostgres) {
+            if (modelExistsInPostgres) {
                 console.log(
-                    `${modelName} with ID ${vehicle.id} already exists in Postgres, skipping...`
+                    ` ${modelName} with ID ${model.id} already exists in Postgres, skipping...`
                 );
                 continue;
             }
 
             await postgresClient[modelName].create({
                 data: {
-                    ...vehicle,
+                    ...model,
                 },
             });
             console.log(
-                `Migrated ${modelName} with ID ${vehicle.id} to Postgres`
+                `Migrated ${modelName} with ID ${model.id} to Postgres`
             );
         }
     } catch (err) {
@@ -75,6 +75,93 @@ async function migrateItemTag(mysqlClient, postgresClient) {
     }
 }
 
+// Function to sync PostgreSQL sequences after migration
+async function syncSequences() {
+    console.log('Starting enhanced sequence synchronization...');
+    const freshPostgresClient = new PostgresClient();
+
+    try {
+        await freshPostgresClient.$connect();
+
+        // Get all tables with their primary key columns
+        const tables = await freshPostgresClient.$queryRawUnsafe(`
+      SELECT
+        t.table_name,
+        c.column_name,
+        c.is_identity
+      FROM
+        information_schema.tables t
+        JOIN information_schema.columns c ON t.table_name = c.table_name
+      WHERE
+        t.table_schema = 'public'
+        AND t.table_type = 'BASE TABLE'
+        AND c.column_default LIKE 'nextval%'
+      ORDER BY t.table_name
+    `);
+
+        console.log(
+            `Found ${tables.length} tables with sequence-based columns`
+        );
+
+        for (const { table_name, column_name, is_identity } of tables) {
+            try {
+                // Get the sequence name from the column's default value
+                const sequenceInfo = await freshPostgresClient.$queryRawUnsafe(`
+          SELECT
+            substring(column_default from '''([^'']+)''') as sequence_name
+          FROM
+            information_schema.columns
+          WHERE
+            table_schema = 'public'
+            AND table_name = '${table_name}'
+            AND column_name = '${column_name}'
+        `);
+
+                const sequenceName = sequenceInfo[0]?.sequence_name;
+                if (!sequenceName) {
+                    console.log(
+                        `⚠️  No sequence found for ${table_name}.${column_name}`
+                    );
+                    continue;
+                }
+
+                // Get the maximum ID from the table
+                const result = await freshPostgresClient.$queryRawUnsafe(
+                    `SELECT MAX(${column_name}) as max FROM "${table_name}"`
+                );
+
+                const maxId = result[0]?.max;
+                if (maxId === null || maxId === undefined) {
+                    console.log(
+                        `⚠️  No records found in ${table_name}, skipping sequence sync`
+                    );
+                    continue;
+                }
+
+                // Set the sequence to the maximum ID
+                await freshPostgresClient.$executeRawUnsafe(
+                    `SELECT setval('${sequenceName}', ${maxId}, true)`
+                );
+                console.log(
+                    `✅ Synced ${sequenceName} to ${maxId} (table: ${table_name})`
+                );
+            } catch (err) {
+                console.error(
+                    `❌ Error syncing sequence for ${table_name}:`,
+                    err.message
+                );
+            }
+        }
+
+        console.log('Sequence synchronization completed');
+    } catch (err) {
+        console.error('Error during sequence synchronization:', err);
+        throw err;
+    } finally {
+        await freshPostgresClient.$disconnect();
+    }
+}
+
 // Function to migrate MySQL data to Postgres
 async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
     try {
@@ -94,6 +181,8 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         await migrateModel(mysqlClient, postgresClient, 'invoice'); // 13
         await migrateModel(mysqlClient, postgresClient, 'appointment'); // 14
         await migrateModel(mysqlClient, postgresClient, 'appointmentUser'); // 15
+        await migrateModel(mysqlClient, postgresClient, 'message'); // 66
+
         await migrateModel(mysqlClient, postgresClient, 'attachment'); // 16
         await migrateModel(mysqlClient, postgresClient, 'calendarSettings'); // 17
         await migrateModel(mysqlClient, postgresClient, 'payment'); // 18
@@ -172,8 +261,8 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         ); // 63
         await migrateModel(mysqlClient, postgresClient, 'material'); // 64
         await migrateModel(mysqlClient, postgresClient, 'materialTag'); // 65
-        await migrateModel(mysqlClient, postgresClient, 'message'); // 66
         await migrateModel(mysqlClient, postgresClient, 'chatTrack'); // 90
+        await migrateModel(mysqlClient, postgresClient, 'notification'); // 90
         await migrateModel(
             mysqlClient,
             postgresClient,
@@ -221,7 +310,11 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         ); // 87
         await migrateModel(mysqlClient, postgresClient, 'vehicleParts'); // 88
         await migrateModel(mysqlClient, postgresClient, 'automationAttachment'); // 89
+
         console.log('Migration from MySQL to Postgres completed successfully');
+
+        // Sync sequences after migration
+        await syncSequences();
     } catch (err) {
         console.error('Error during migration:', err);
         throw err;
