@@ -75,6 +75,110 @@ async function migrateItemTag(mysqlClient, postgresClient) {
     }
 }
 
+async function migrateInventoryProductTag(mysqlClient, postgresClient) {
+    try {
+        const itemTags = await mysqlClient.inventoryProductTag.findMany();
+        console.log(`Found ${itemTags.length} material tag in MySQL`);
+
+        for (const itemTag of itemTags) {
+            const itemTagExistsInPostgres =
+                await postgresClient.inventoryProductTag.findFirst({
+                    where: {
+                        inventoryId: itemTag.inventoryId,
+                        tagId: itemTag.tagId,
+                    },
+                });
+
+            if (itemTagExistsInPostgres) {
+                console.log(
+                    `labor tag with ID ${itemTag.id} already exists in Postgres, skipping...`
+                );
+                continue;
+            }
+
+            await postgresClient.inventoryProductTag.create({
+                data: {
+                    ...itemTag,
+                },
+            });
+            console.log(`Migrated labor tag with ID ${itemTag.id} to Postgres`);
+        }
+    } catch (err) {
+        console.error('Error migrating labor tags:', err);
+        throw err;
+    }
+}
+async function migrateLaborTag(mysqlClient, postgresClient) {
+    try {
+        const laborTags = await mysqlClient.laborTag.findMany();
+        console.log(`Found ${laborTags.length} material tag in MySQL`);
+
+        for (const laborTagData of laborTags) {
+            const laborTagExistsInPostgres =
+                await postgresClient.laborTag.findFirst({
+                    where: {
+                        laborId: laborTagData.laborId,
+                        tagId: laborTagData.tagId,
+                    },
+                });
+
+            if (laborTagExistsInPostgres) {
+                console.log(
+                    `inventory product tag with ID ${laborTagData.id} already exists in Postgres, skipping...`
+                );
+                continue;
+            }
+
+            await postgresClient.laborTag.create({
+                data: {
+                    ...laborTagData,
+                },
+            });
+            console.log(
+                `Migrated labor tag with ID ${laborTagData.id} to Postgres`
+            );
+        }
+    } catch (err) {
+        console.error('Error migrating labor tags:', err);
+        throw err;
+    }
+}
+async function migrateMaterialTag(mysqlClient, postgresClient) {
+    try {
+        const materialTags = await mysqlClient.materialTag.findMany();
+        console.log(`Found ${materialTags.length} material tag in MySQL`);
+
+        for (const materialTagData of materialTags) {
+            const materialTagExistsInPostgres =
+                await postgresClient.materialTag.findFirst({
+                    where: {
+                        materialId: materialTagData.materialId,
+                        tagId: materialTagData.tagId,
+                    },
+                });
+
+            if (materialTagExistsInPostgres) {
+                console.log(
+                    `material tag with ID ${materialTagData.id} already exists in Postgres, skipping...`
+                );
+                continue;
+            }
+
+            await postgresClient.materialTag.create({
+                data: {
+                    ...materialTagData,
+                },
+            });
+            console.log(
+                `material tag with ID ${materialTagData.id} to Postgres`
+            );
+        }
+    } catch (err) {
+        console.error('Error migrating labor tags:', err);
+        throw err;
+    }
+}
+
 // Function to sync PostgreSQL sequences after migration
 async function syncSequences() {
     console.log('Starting enhanced sequence synchronization...');
@@ -171,6 +275,7 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         await migrateModel(mysqlClient, postgresClient, 'service'); // 4
         await migrateModel(mysqlClient, postgresClient, 'column'); // 5
         await migrateModel(mysqlClient, postgresClient, 'tag'); //6
+        await migrateModel(mysqlClient, postgresClient, 'source'); // 80
         await migrateModel(mysqlClient, postgresClient, 'lead'); // 7
         await migrateModel(mysqlClient, postgresClient, 'client'); // 8
         await migrateModel(mysqlClient, postgresClient, 'vehicleColor'); // 9
@@ -181,9 +286,6 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         await migrateModel(mysqlClient, postgresClient, 'invoice'); // 13
         await migrateModel(mysqlClient, postgresClient, 'appointment'); // 14
         await migrateModel(mysqlClient, postgresClient, 'appointmentUser'); // 15
-        await migrateModel(mysqlClient, postgresClient, 'message'); // 66
-
-        await migrateModel(mysqlClient, postgresClient, 'attachment'); // 16
         await migrateModel(mysqlClient, postgresClient, 'calendarSettings'); // 17
         await migrateModel(mysqlClient, postgresClient, 'payment'); // 18
         await migrateModel(mysqlClient, postgresClient, 'paymentMethod'); // 19
@@ -215,7 +317,6 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         await migrateModel(mysqlClient, postgresClient, 'companyJoin'); // 37
         await migrateModel(mysqlClient, postgresClient, 'coupon'); // 38
         await migrateModel(mysqlClient, postgresClient, 'emailTemplate'); // 39
-        await migrateModel(mysqlClient, postgresClient, 'group'); // 40
         await migrateModel(mysqlClient, postgresClient, 'holiday'); // 41
         await migrateModel(mysqlClient, postgresClient, 'vendor'); // 42
         await migrateModel(mysqlClient, postgresClient, 'inventoryProduct'); // 43
@@ -224,7 +325,10 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
             postgresClient,
             'inventoryProductHistory'
         ); // 44
-        await migrateModel(mysqlClient, postgresClient, 'inventoryProductTag'); // 45
+        await migrateModel(mysqlClient, postgresClient, 'labor'); // 49
+        await migrateModel(mysqlClient, postgresClient, 'invoiceItem'); // 50
+        await migrateItemTag(mysqlClient, postgresClient); // 55
+        await migrateInventoryProductTag(mysqlClient, postgresClient); // 45
         await migrateModel(
             mysqlClient,
             postgresClient,
@@ -235,15 +339,12 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
             postgresClient,
             'invoiceAutomationRule'
         ); // 47
-        await migrateModel(mysqlClient, postgresClient, 'labor'); // 49
-        await migrateModel(mysqlClient, postgresClient, 'invoiceItem'); // 50
         await migrateModel(mysqlClient, postgresClient, 'technician'); // 52  //TODO:
         await migrateModel(mysqlClient, postgresClient, 'invoiceInspection'); // 48
         await migrateModel(mysqlClient, postgresClient, 'invoicePhoto'); // 51
         await migrateModel(mysqlClient, postgresClient, 'invoiceRedo'); // 53
         await migrateModel(mysqlClient, postgresClient, 'invoiceTags'); // 54
-        await migrateItemTag(mysqlClient, postgresClient); // 55
-        await migrateModel(mysqlClient, postgresClient, 'laborTag'); // 56
+        await migrateLaborTag(mysqlClient, postgresClient); // 56
         await migrateModel(mysqlClient, postgresClient, 'leadLink'); // 57
         await migrateModel(mysqlClient, postgresClient, 'leadTags'); // 58
         await migrateModel(mysqlClient, postgresClient, 'leaveRequest'); // 59
@@ -260,8 +361,7 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
             'marketingAutomationRule'
         ); // 63
         await migrateModel(mysqlClient, postgresClient, 'material'); // 64
-        await migrateModel(mysqlClient, postgresClient, 'materialTag'); // 65
-        await migrateModel(mysqlClient, postgresClient, 'chatTrack'); // 90
+        await migrateMaterialTag(mysqlClient, postgresClient); // 65
         await migrateModel(mysqlClient, postgresClient, 'notification'); // 90
         await migrateModel(
             mysqlClient,
@@ -286,6 +386,11 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
         ); // 75
         await migrateModel(mysqlClient, postgresClient, 'pipelineStage'); // 76
         await migrateModel(mysqlClient, postgresClient, 'requestEstimate'); // 77
+        await migrateModel(mysqlClient, postgresClient, 'group'); // 40
+        await migrateModel(mysqlClient, postgresClient, 'message'); // 66
+
+        await migrateModel(mysqlClient, postgresClient, 'chatTrack'); // 90
+        await migrateModel(mysqlClient, postgresClient, 'attachment'); // 16
         await migrateModel(
             mysqlClient,
             postgresClient,
@@ -296,7 +401,6 @@ async function migrateMySQLToPostgres(mysqlClient, postgresClient) {
             postgresClient,
             'serviceMaintenanceStage'
         ); // 79
-        await migrateModel(mysqlClient, postgresClient, 'source'); // 80
         await migrateModel(mysqlClient, postgresClient, 'status'); // 81
         await migrateModel(mysqlClient, postgresClient, 'task'); // 82
         await migrateModel(mysqlClient, postgresClient, 'taskUser'); // 83
