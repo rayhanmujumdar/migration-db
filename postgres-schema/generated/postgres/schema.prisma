@@ -90,24 +90,28 @@ model PipelineStage {
 }
 
 model TimeDelayExecution {
-  id                       Int                               @id @default(autoincrement())
-  pipelineRuleId           Int?
-  communicationRuleId      Int?
-  leadId                   Int?
-  estimateId               String?
-  serviceMaintenanceRuleId Int?
-  lead                     Lead?                             @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  estimate                 Invoice?                          @relation(fields: [estimateId], references: [id], onDelete: Cascade)
-  executeAt                DateTime
-  status                   ExecutionStatus                   @default(PENDING)
-  jobId                    String?
-  createdAt                DateTime                          @default(now())
-  updatedAt                DateTime                          @updatedAt
-  columnId                 Int?
-  column                   Column?                           @relation(fields: [columnId], references: [id])
-  pipelineRule             PipelineAutomationRule?           @relation(fields: [pipelineRuleId], references: [id], onDelete: SetNull)
-  communicationRule        CommunicationAutomationRule?      @relation(fields: [communicationRuleId], references: [id], onDelete: SetNull)
-  serviceMaintenanceRule   ServiceMaintenanceAutomationRule? @relation(fields: [serviceMaintenanceRuleId], references: [id], onDelete: SetNull)
+  id                        Int                               @id @default(autoincrement())
+  pipelineRuleId            Int?
+  communicationRuleId       Int?
+  leadId                    Int?
+  estimateId                String?
+  serviceMaintenanceRuleId  Int?
+  invoiceAutomationRuleId   Int?
+  lead                      Lead?                             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  estimate                  Invoice?                          @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  executeAt                 DateTime
+  status                    ExecutionStatus                   @default(PENDING)
+  jobId                     String?
+  createdAt                 DateTime                          @default(now())
+  updatedAt                 DateTime                          @updatedAt
+  columnId                  Int?
+  column                    Column?                           @relation(fields: [columnId], references: [id])
+  pipelineRule              PipelineAutomationRule?           @relation(fields: [pipelineRuleId], references: [id], onDelete: SetNull)
+  communicationRule         CommunicationAutomationRule?      @relation(fields: [communicationRuleId], references: [id], onDelete: SetNull)
+  serviceMaintenanceRule    ServiceMaintenanceAutomationRule? @relation(fields: [serviceMaintenanceRuleId], references: [id], onDelete: SetNull)
+  InvoiceAutomationRule     InvoiceAutomationRule?            @relation(fields: [invoiceAutomationRuleId], references: [id])
+  InventoryAutomationRule   InventoryAutomationRule?          @relation(fields: [inventoryAutomationRuleId], references: [id])
+  inventoryAutomationRuleId Int?
 
   @@index([executeAt, status])
   @@index([pipelineRuleId])
@@ -208,18 +212,53 @@ model ServiceMaintenanceStage {
 }
 
 model InvoiceAutomationRule {
-  id                Int                    @id @default(autoincrement())
-  title             String
-  companyId         Int
-  invoiceStatus     String
-  timeDelay         Int?
-  isPaused          Boolean                @default(false)
-  communicationType CommunicationType
-  emailBody         String
-  smsBody           String
-  emailSubject      String
-  attachments       AutomationAttachment[] @relation("InvoiceAttachments")
-  company           Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id                 Int                    @id @default(autoincrement())
+  title              String
+  companyId          Int
+  invoiceStatusId    Int
+  timeDelay          Int?
+  isPaused           Boolean                @default(false)
+  communicationType  CommunicationType
+  emailBody          String?                @db.Text
+  smsBody            String?                @db.Text
+  emailSubject       String?
+  invoiceStatus      Column?                @relation(fields: [invoiceStatusId], references: [id], name: "invoiceStatus")
+  attachments        AutomationAttachment[] @relation("InvoiceAttachments")
+  company            Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  timeDelayExecution TimeDelayExecution[]
+  Column             Column?                @relation(fields: [columnId], references: [id])
+  columnId           Int?
+  createdBy          String?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+}
+
+model InventoryAutomationRule {
+  id                 Int                             @id @default(autoincrement())
+  title              String
+  companyId          Int
+  frequency          InventoryAutomationFrequency
+  day                DayOfWeek? // Only required when frequency is WEEKLY
+  condition          InventoryCondition
+  action             InventoryNotificationAction
+  isPaused           Boolean                         @default(false)
+  createdBy          String?
+  createdAt          DateTime                        @default(now())
+  updatedAt          DateTime                        @updatedAt
+  company            Company                         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  teamMembers        InventoryAutomationTeamMember[]
+  timeDelayExecution TimeDelayExecution[]
+
+  @@index([companyId])
+}
+
+model InventoryAutomationTeamMember {
+  inventoryRuleId Int
+  userId          Int
+  inventoryRule   InventoryAutomationRule @relation(fields: [inventoryRuleId], references: [id], onDelete: Cascade)
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([inventoryRuleId, userId])
 }
 
 model AutomationAttachment {
@@ -281,6 +320,35 @@ enum ExecutionStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+enum InventoryAutomationFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  EVERY_TWO_MONTHS
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum InventoryCondition {
+  LOW_STOCK
+  OUT_OF_STOCK
+  BOTH
+}
+
+enum InventoryNotificationAction {
+  EMAIL
+  SMS
+  BOTH
 }
 
 // Client of a company.
@@ -476,8 +544,8 @@ model Company {
   PipelineAutomationRule           PipelineAutomationRule[]
   ServiceMaintenanceAutomationRule ServiceMaintenanceAutomationRule[]
   Refund                           Refund[]
-
-  InvoiceAutomationRule InvoiceAutomationRule[]
+  InvoiceAutomationRule            InvoiceAutomationRule[]
+  inventoryAutomationRule          InventoryAutomationRule[]
 }
 
 // create model that will handle multiple companies join and collaboration
@@ -693,7 +761,7 @@ model MailgunEmail {
   id Int @id @default(autoincrement())
 
   subject     String
-  text        String
+  text        String                   @db.Text
   attachments MailgunEmailAttachment[]
   emailBy     EMAIL_BY
 
@@ -783,6 +851,8 @@ model Column {
   targetForCommunicationRules      CommunicationAutomationRule[]      @relation("targetColumn")
   serviceMaintenanceAutomationRule ServiceMaintenanceAutomationRule[] @relation("targetColumn")
   serviceMaintenanceStageForRules  ServiceMaintenanceAutomationRule[] @relation("conditionColumn")
+  invoiceAutomationRule            InvoiceAutomationRule[]            @relation("invoiceStatus")
+  InvoiceAutomationRule            InvoiceAutomationRule[]
 
   @@index([companyId])
   @@index([type])
@@ -1652,10 +1722,12 @@ model User {
   commission        Decimal?           @default(0) @db.Decimal(10, 3)
   role              Role               @default(admin)
   employeeType      EmployeeType       @default(Admin)
+  isSuperAdmin      Boolean            @default(false) @map("is_super_admin")
   joinDate          DateTime?          @map("join_date")
   companyId         Int                @map("company_id")
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at")
+  refreshToken      String?            @map("refresh_token")
   company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   groups            Group[]            @relation("UserGroups")
   tasks             Task[]
@@ -1676,11 +1748,12 @@ model User {
   ClientSMS         ClientSMS[]
   ClientCall        ClientCall[]
 
-  salesLead            Lead[]
-  NotificationSettings NotificationSettingsV2[]
-  Notification         Notification[]
-  resetToken           PasswordResetToken?
-  Refund               Refund[]
+  salesLead                      Lead[]
+  NotificationSettings           NotificationSettingsV2[]
+  Notification                   Notification[]
+  resetToken                     PasswordResetToken?
+  Refund                         Refund[]
+  inventoryAutomationTeamMembers InventoryAutomationTeamMember[]
 
   @@index([companyId], name: "fk_users_company")
 }

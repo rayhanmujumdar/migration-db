@@ -55,7 +55,6 @@ model AppointmentUser {
 
   @@index([appointmentId])
 }
-
 // Pipeline Automation Schema
 
 model PipelineAutomationRule {
@@ -96,6 +95,7 @@ model TimeDelayExecution {
   leadId                   Int?
   estimateId               String?
   serviceMaintenanceRuleId Int?
+  invoiceAutomationRuleId  Int?
   lead                     Lead?                             @relation(fields: [leadId], references: [id], onDelete: Cascade)
   estimate                 Invoice?                          @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   executeAt                DateTime
@@ -108,6 +108,10 @@ model TimeDelayExecution {
   pipelineRule             PipelineAutomationRule?           @relation(fields: [pipelineRuleId], references: [id], onDelete: SetNull)
   communicationRule        CommunicationAutomationRule?      @relation(fields: [communicationRuleId], references: [id], onDelete: SetNull)
   serviceMaintenanceRule   ServiceMaintenanceAutomationRule? @relation(fields: [serviceMaintenanceRuleId], references: [id], onDelete: SetNull)
+  InvoiceAutomationRule    InvoiceAutomationRule?            @relation(fields: [invoiceAutomationRuleId], references: [id])
+  InventoryAutomationRule  InventoryAutomationRule?          @relation(fields: [inventoryAutomationRuleId], references: [id])
+  inventoryAutomationRuleId Int?
+
 
   @@index([executeAt, status])
   @@index([pipelineRuleId])
@@ -208,18 +212,52 @@ model ServiceMaintenanceStage {
 }
 
 model InvoiceAutomationRule {
-  id                Int                    @id @default(autoincrement())
-  title             String
-  companyId         Int
-  invoiceStatus     String
-  timeDelay         Int?
-  isPaused          Boolean                @default(false)
-  communicationType CommunicationType
-  emailBody         String
-  smsBody           String
-  emailSubject      String
-  attachments       AutomationAttachment[] @relation("InvoiceAttachments")
-  company           Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id                 Int                    @id @default(autoincrement())
+  title              String
+  companyId          Int
+  invoiceStatusId    Int
+  timeDelay          Int?
+  isPaused           Boolean                @default(false)
+  communicationType  CommunicationType
+  emailBody          String?                @db.Text
+  smsBody            String?                @db.Text
+  emailSubject       String?
+  invoiceStatus      Column?                @relation(fields: [invoiceStatusId], references: [id], name: "invoiceStatus")
+  attachments        AutomationAttachment[] @relation("InvoiceAttachments")
+  company            Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  timeDelayExecution TimeDelayExecution[]
+  Column             Column?                @relation(fields: [columnId], references: [id])
+  columnId           Int?
+  createdBy          String?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+}
+model InventoryAutomationRule {
+  id                 Int                            @id @default(autoincrement())
+  title              String
+  companyId          Int
+  frequency          InventoryAutomationFrequency
+  day                DayOfWeek?                     // Only required when frequency is WEEKLY
+  condition          InventoryCondition
+  action             InventoryNotificationAction
+  isPaused           Boolean                        @default(false)
+  createdBy          String?
+  createdAt          DateTime                       @default(now())
+  updatedAt          DateTime                       @updatedAt
+  company            Company                        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  teamMembers        InventoryAutomationTeamMember[]
+  timeDelayExecution TimeDelayExecution[]
+
+  @@index([companyId])
+}
+
+model InventoryAutomationTeamMember {
+  inventoryRuleId Int
+  userId          Int
+  inventoryRule   InventoryAutomationRule @relation(fields: [inventoryRuleId], references: [id], onDelete: Cascade)
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([inventoryRuleId, userId])
 }
 
 model AutomationAttachment {
@@ -236,6 +274,7 @@ model AutomationAttachment {
   createdAt            DateTime                          @default(now())
   updatedAt            DateTime                          @updatedAt
 }
+
 
 // Enums
 enum CommunicationType {
@@ -283,6 +322,34 @@ enum ExecutionStatus {
   CANCELLED
 }
 
+enum InventoryAutomationFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  EVERY_TWO_MONTHS
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum InventoryCondition {
+  LOW_STOCK
+  OUT_OF_STOCK
+  BOTH
+}
+
+enum InventoryNotificationAction {
+  EMAIL
+  SMS
+  BOTH
+}
 // Client of a company.
 // Client is just data, they can't login.
 model Client {
@@ -385,7 +452,6 @@ model ClientConversationTrack {
   updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
   client             Client    @relation(fields: [clientId], references: [id], onDelete: Cascade) // Update this line to establish the one-to-one relation
 }
-
 // Company model.
 // Every user belongs to a company.
 // For now, every user has to create their own company when registering.
@@ -476,8 +542,8 @@ model Company {
   PipelineAutomationRule           PipelineAutomationRule[]
   ServiceMaintenanceAutomationRule ServiceMaintenanceAutomationRule[]
   Refund                           Refund[]
-
-  InvoiceAutomationRule InvoiceAutomationRule[]
+  InvoiceAutomationRule            InvoiceAutomationRule[]
+  inventoryAutomationRule          InventoryAutomationRule[]
 }
 
 // create model that will handle multiple companies join and collaboration
@@ -693,7 +759,7 @@ model MailgunEmail {
   id Int @id @default(autoincrement())
 
   subject     String
-  text        String                 @db.Text  
+  text        String                   @db.Text
   attachments MailgunEmailAttachment[]
   emailBy     EMAIL_BY
 
@@ -723,7 +789,6 @@ model MailgunEmailAttachment {
   mailgunEmailId Int
   mailgunEmail   MailgunEmail @relation(fields: [mailgunEmailId], references: [id], onDelete: Cascade)
 }
-
 // Category of a invoice.
 // Category is a part of Service, Material and Labor.
 // It's an independant model. So, one category can be in multiple services, materials and labors.
@@ -783,12 +848,13 @@ model Column {
   targetForCommunicationRules      CommunicationAutomationRule[]      @relation("targetColumn")
   serviceMaintenanceAutomationRule ServiceMaintenanceAutomationRule[] @relation("targetColumn")
   serviceMaintenanceStageForRules  ServiceMaintenanceAutomationRule[] @relation("conditionColumn")
+  invoiceAutomationRule            InvoiceAutomationRule[]            @relation("invoiceStatus")
+  InvoiceAutomationRule            InvoiceAutomationRule[]
 
   @@index([companyId])
   @@index([type])
   @@index([type, companyId])
 }
-
 model InventoryProduct {
   id                      Int                       @id @default(autoincrement())
   name                    String
@@ -890,7 +956,6 @@ model inventoryWirehouseProduct {
   @@index([unit])
   @@index([category, productName])
 }
-
 // InvoiceItem of a invoice.
 // Its a holder for service, material and labor.
 // One invoice can have multiple InvoiceItems.
@@ -1027,7 +1092,7 @@ model Tag {
   InvoiceTags         InvoiceTags[]
   InventoryProductTag InventoryProductTag[]
   leadTags            LeadTags[]
-
+  
   @@index([companyId, type]) // NEW: Index for better query performance
 }
 
@@ -1063,12 +1128,11 @@ model LaborTag {
 
 // NEW: Enum for tag types
 enum TagType {
-  GENERAL // For invoice items, materials, labor
-  SALES // For sales/leads
-  CLIENT // For clients
-  INVENTORY // For inventory products
+  GENERAL    // For invoice items, materials, labor
+  SALES      // For sales/leads
+  CLIENT     // For clients
+  INVENTORY  // For inventory products
 }
-
 // Invoice of a company.
 // Note that `Invoice` is same as `Estimate`. So don't get confused.
 // We can differentiate them by `type` field.
@@ -1136,6 +1200,7 @@ model Invoice {
   TimeDelayExecution      TimeDelayExecution[]
   Refund                  Refund[]
   FleetStatement          FleetStatement?           @relation(fields: [fleetStatementId], references: [id])
+  
 
   @@index([companyId], name: "fk_invoices_company")
   @@index([companyId, type])
@@ -1249,7 +1314,6 @@ model InvoiceInspection {
 
   @@index([invoiceId], name: "fk_invoice_inspections_invoice")
 }
-
 // Message for chat.
 model Message {
   id                Int              @id @default(autoincrement())
@@ -1310,7 +1374,6 @@ model Group {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
 }
-
 // notification settings model
 model NotificationSettingsV2 {
   id                Int                 @id @default(autoincrement())
@@ -1395,7 +1458,6 @@ model Notification {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
-
 // Payment of a invoice.
 // One invoice can have one payment. And one payment can't be in multiple invoices.
 // Payment can be of type card, check, cash or other.
@@ -1562,7 +1624,6 @@ enum DiscountType {
   Percentage
   Fixed
 }
-
 // Task for a company.
 model Task {
   id            Int        @id @default(autoincrement())
@@ -1605,7 +1666,6 @@ model TaskUser {
 
   @@index([taskId])
 }
-
 model UserFeedback {
   id                     Int                      @id @default(autoincrement())
   userId                 Int                      @map("user_id")
@@ -1628,7 +1688,6 @@ model UserFeedbackAttachment {
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at")
   userFeedback   UserFeedback @relation(fields: [userFeedbackId], references: [id])
 }
-
 // User model.
 // User can be employee or admin.
 // When user registers, they have to create a company. So, every new user is an admin.
@@ -1652,10 +1711,12 @@ model User {
   commission        Decimal?           @default(0) @db.Decimal(10, 3)
   role              Role               @default(admin)
   employeeType      EmployeeType       @default(Admin)
+  isSuperAdmin    Boolean            @default(false) @map("is_super_admin")
   joinDate          DateTime?          @map("join_date")
   companyId         Int                @map("company_id")
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at")
+  refreshToken      String?            @map("refresh_token")
   company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   groups            Group[]            @relation("UserGroups")
   tasks             Task[]
@@ -1681,6 +1742,7 @@ model User {
   Notification         Notification[]
   resetToken           PasswordResetToken?
   Refund               Refund[]
+  inventoryAutomationTeamMembers InventoryAutomationTeamMember[]
 
   @@index([companyId], name: "fk_users_company")
 }
@@ -1925,7 +1987,6 @@ enum ClientSMSSentBy {
   Client
   Company
 }
-
 // Vehicle of a company.
 model Vehicle {
   id                     Int      @id @default(autoincrement())

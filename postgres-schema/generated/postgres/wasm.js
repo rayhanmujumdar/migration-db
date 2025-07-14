@@ -177,12 +177,14 @@ exports.Prisma.TimeDelayExecutionScalarFieldEnum = {
   leadId: 'leadId',
   estimateId: 'estimateId',
   serviceMaintenanceRuleId: 'serviceMaintenanceRuleId',
+  invoiceAutomationRuleId: 'invoiceAutomationRuleId',
   executeAt: 'executeAt',
   status: 'status',
   jobId: 'jobId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  columnId: 'columnId'
+  columnId: 'columnId',
+  inventoryAutomationRuleId: 'inventoryAutomationRuleId'
 };
 
 exports.Prisma.CommunicationAutomationRuleScalarFieldEnum = {
@@ -260,13 +262,36 @@ exports.Prisma.InvoiceAutomationRuleScalarFieldEnum = {
   id: 'id',
   title: 'title',
   companyId: 'companyId',
-  invoiceStatus: 'invoiceStatus',
+  invoiceStatusId: 'invoiceStatusId',
   timeDelay: 'timeDelay',
   isPaused: 'isPaused',
   communicationType: 'communicationType',
   emailBody: 'emailBody',
   smsBody: 'smsBody',
-  emailSubject: 'emailSubject'
+  emailSubject: 'emailSubject',
+  columnId: 'columnId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InventoryAutomationRuleScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  companyId: 'companyId',
+  frequency: 'frequency',
+  day: 'day',
+  condition: 'condition',
+  action: 'action',
+  isPaused: 'isPaused',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InventoryAutomationTeamMemberScalarFieldEnum = {
+  inventoryRuleId: 'inventoryRuleId',
+  userId: 'userId'
 };
 
 exports.Prisma.AutomationAttachmentScalarFieldEnum = {
@@ -1061,10 +1086,12 @@ exports.Prisma.UserScalarFieldEnum = {
   commission: 'commission',
   role: 'role',
   employeeType: 'employeeType',
+  isSuperAdmin: 'isSuperAdmin',
   joinDate: 'joinDate',
   companyId: 'companyId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  refreshToken: 'refreshToken'
 };
 
 exports.Prisma.PasswordResetTokenScalarFieldEnum = {
@@ -1339,6 +1366,35 @@ exports.TargetCondition = exports.$Enums.TargetCondition = {
   ALL_CLIENTS_FROM_LAST_YEAR: 'ALL_CLIENTS_FROM_LAST_YEAR'
 };
 
+exports.InventoryAutomationFrequency = exports.$Enums.InventoryAutomationFrequency = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+  EVERY_TWO_MONTHS: 'EVERY_TWO_MONTHS'
+};
+
+exports.DayOfWeek = exports.$Enums.DayOfWeek = {
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
+  SUNDAY: 'SUNDAY'
+};
+
+exports.InventoryCondition = exports.$Enums.InventoryCondition = {
+  LOW_STOCK: 'LOW_STOCK',
+  OUT_OF_STOCK: 'OUT_OF_STOCK',
+  BOTH: 'BOTH'
+};
+
+exports.InventoryNotificationAction = exports.$Enums.InventoryNotificationAction = {
+  EMAIL: 'EMAIL',
+  SMS: 'SMS',
+  BOTH: 'BOTH'
+};
+
 exports.EmailTemplateType = exports.$Enums.EmailTemplateType = {
   Confirmation: 'Confirmation',
   Reminder: 'Reminder'
@@ -1505,6 +1561,8 @@ exports.Prisma.ModelName = {
   ServiceMaintenanceAutomationRule: 'ServiceMaintenanceAutomationRule',
   ServiceMaintenanceStage: 'ServiceMaintenanceStage',
   InvoiceAutomationRule: 'InvoiceAutomationRule',
+  InventoryAutomationRule: 'InventoryAutomationRule',
+  InventoryAutomationTeamMember: 'InventoryAutomationTeamMember',
   AutomationAttachment: 'AutomationAttachment',
   Client: 'Client',
   Fleet: 'Fleet',
