@@ -1727,7 +1727,6 @@ model User {
   companyId         Int                @map("company_id")
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at")
-  refreshToken      String?            @map("refresh_token")
   company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   groups            Group[]            @relation("UserGroups")
   tasks             Task[]
@@ -1771,15 +1770,14 @@ model PasswordResetToken {
 // OAuth token for user.
 // This is mainly used for google calendar integration.
 model OAuthToken {
-  id           Int       @id @default(autoincrement())
-  userId       Int       @unique @map("user_id")
-  provider     String
-  accessToken  String    @map("access_token")
-  refreshToken String?   @map("refresh_token")
-  expiresIn    DateTime? @map("expires_in")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique @map("user_id")
+  provider    String
+  accessToken String    @map("access_token")
+  expiresIn   DateTime? @map("expires_in")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId], name: "fk_oauth_tokens_user")
 }

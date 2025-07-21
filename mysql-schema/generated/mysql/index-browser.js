@@ -1090,8 +1090,7 @@ exports.Prisma.UserScalarFieldEnum = {
   joinDate: 'joinDate',
   companyId: 'companyId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  refreshToken: 'refreshToken'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PasswordResetTokenScalarFieldEnum = {
@@ -1108,7 +1107,6 @@ exports.Prisma.OAuthTokenScalarFieldEnum = {
   userId: 'userId',
   provider: 'provider',
   accessToken: 'accessToken',
-  refreshToken: 'refreshToken',
   expiresIn: 'expiresIn',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1753,8 +1751,7 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   city: 'city',
   state: 'state',
   zip: 'zip',
-  companyName: 'companyName',
-  refreshToken: 'refreshToken'
+  companyName: 'companyName'
 };
 
 exports.Prisma.PasswordResetTokenOrderByRelevanceFieldEnum = {
@@ -1765,8 +1762,7 @@ exports.Prisma.PasswordResetTokenOrderByRelevanceFieldEnum = {
 
 exports.Prisma.OAuthTokenOrderByRelevanceFieldEnum = {
   provider: 'provider',
-  accessToken: 'accessToken',
-  refreshToken: 'refreshToken'
+  accessToken: 'accessToken'
 };
 
 exports.Prisma.ClockInOutOrderByRelevanceFieldEnum = {

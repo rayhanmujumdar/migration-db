@@ -1090,8 +1090,7 @@ exports.Prisma.UserScalarFieldEnum = {
   joinDate: 'joinDate',
   companyId: 'companyId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  refreshToken: 'refreshToken'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PasswordResetTokenScalarFieldEnum = {
@@ -1314,20 +1313,505 @@ exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-};
-
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.AppointmentOrderByRelevanceFieldEnum = {
+  title: 'title',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  draftEstimate: 'draftEstimate',
+  notes: 'notes',
+  googleEventId: 'googleEventId',
+  timezone: 'timezone'
+};
+
+exports.Prisma.AppointmentUserOrderByRelevanceFieldEnum = {
+  eventId: 'eventId'
+};
+
+exports.Prisma.PipelineAutomationRuleOrderByRelevanceFieldEnum = {
+  title: 'title'
+};
+
+exports.Prisma.TimeDelayExecutionOrderByRelevanceFieldEnum = {
+  estimateId: 'estimateId',
+  jobId: 'jobId'
+};
+
+exports.Prisma.CommunicationAutomationRuleOrderByRelevanceFieldEnum = {
+  title: 'title',
+  subject: 'subject',
+  emailBody: 'emailBody',
+  smsBody: 'smsBody',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.MarketingAutomationRuleOrderByRelevanceFieldEnum = {
+  vehicleMinYear: 'vehicleMinYear',
+  vehicleMaxYear: 'vehicleMaxYear',
+  vehicleBrand: 'vehicleBrand',
+  vehicleModel: 'vehicleModel',
+  emailSubject: 'emailSubject',
+  emailBody: 'emailBody',
+  smsBody: 'smsBody',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.ServiceMaintenanceAutomationRuleOrderByRelevanceFieldEnum = {
+  title: 'title',
+  emailSubject: 'emailSubject',
+  emailBody: 'emailBody',
+  smsBody: 'smsBody',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.InvoiceAutomationRuleOrderByRelevanceFieldEnum = {
+  title: 'title',
+  emailBody: 'emailBody',
+  smsBody: 'smsBody',
+  emailSubject: 'emailSubject',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.InventoryAutomationRuleOrderByRelevanceFieldEnum = {
+  title: 'title',
+  createdBy: 'createdBy'
+};
+
+exports.Prisma.AutomationAttachmentOrderByRelevanceFieldEnum = {
+  fileUrl: 'fileUrl'
+};
+
+exports.Prisma.ClientOrderByRelevanceFieldEnum = {
+  firstName: 'firstName',
+  lastName: 'lastName',
+  mobile: 'mobile',
+  email: 'email',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  zip: 'zip',
+  photo: 'photo',
+  customerCompany: 'customerCompany',
+  notes: 'notes'
+};
+
+exports.Prisma.FleetOrderByRelevanceFieldEnum = {
+  fleetName: 'fleetName',
+  contactName: 'contactName',
+  preferredPaymentTerm: 'preferredPaymentTerm'
+};
+
+exports.Prisma.FleetStatementOrderByRelevanceFieldEnum = {
+  id: 'id'
+};
+
+exports.Prisma.SourceOrderByRelevanceFieldEnum = {
+  name: 'name'
+};
+
+exports.Prisma.ClientConversationTrackOrderByRelevanceFieldEnum = {
+  emailLastMessage: 'emailLastMessage',
+  smsLastMessage: 'smsLastMessage'
+};
+
+exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
+  name: 'name',
+  businessId: 'businessId',
+  businessType: 'businessType',
+  phone: 'phone',
+  email: 'email',
+  industry: 'industry',
+  website: 'website',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  zip: 'zip',
+  image: 'image',
+  currency: 'currency',
+  terms: 'terms',
+  policy: 'policy',
+  googleEmail: 'googleEmail',
+  googleRefreshToken: 'googleRefreshToken',
+  googleCalendarToken: 'googleCalendarToken',
+  zapierToken: 'zapierToken',
+  stripeAccountId: 'stripeAccountId',
+  timezone: 'timezone'
+};
+
+exports.Prisma.CalendarSettingsOrderByRelevanceFieldEnum = {
+  weekStart: 'weekStart',
+  dayStart: 'dayStart',
+  dayEnd: 'dayEnd',
+  weekend1: 'weekend1',
+  weekend2: 'weekend2'
+};
+
+exports.Prisma.HolidayOrderByRelevanceFieldEnum = {
+  month: 'month'
+};
+
+exports.Prisma.EmailTemplateOrderByRelevanceFieldEnum = {
+  subject: 'subject',
+  message: 'message'
+};
+
+exports.Prisma.LeadOrderByRelevanceFieldEnum = {
+  clientName: 'clientName',
+  clientEmail: 'clientEmail',
+  clientPhone: 'clientPhone',
+  vehicleInfo: 'vehicleInfo',
+  services: 'services',
+  source: 'source',
+  comments: 'comments'
+};
+
+exports.Prisma.LeadLinkOrderByRelevanceFieldEnum = {
+  source: 'source',
+  generatedLink: 'generatedLink',
+  shortUrl: 'shortUrl',
+  QRCode: 'QRCode'
+};
+
+exports.Prisma.LeaveRequestOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description'
+};
+
+exports.Prisma.CompanyEmailTemplateOrderByRelevanceFieldEnum = {
+  subject: 'subject',
+  message: 'message'
+};
+
+exports.Prisma.TwilioCredentialsOrderByRelevanceFieldEnum = {
+  accountSid: 'accountSid',
+  authToken: 'authToken',
+  phoneNumber: 'phoneNumber',
+  apiKeySid: 'apiKeySid',
+  apiKeySecret: 'apiKeySecret',
+  twimlAppSid: 'twimlAppSid',
+  phoneNumberSid: 'phoneNumberSid'
+};
+
+exports.Prisma.MailgunCredentialOrderByRelevanceFieldEnum = {
+  mailAddress: 'mailAddress',
+  domain: 'domain',
+  apiKey: 'apiKey',
+  smtpPassword: 'smtpPassword'
+};
+
+exports.Prisma.MailgunEmailOrderByRelevanceFieldEnum = {
+  subject: 'subject',
+  text: 'text',
+  messageId: 'messageId'
+};
+
+exports.Prisma.MailgunEmailAttachmentOrderByRelevanceFieldEnum = {
+  name: 'name',
+  url: 'url'
+};
+
+exports.Prisma.CategoryOrderByRelevanceFieldEnum = {
+  name: 'name'
+};
+
+exports.Prisma.StatusOrderByRelevanceFieldEnum = {
+  name: 'name',
+  textColor: 'textColor',
+  bgColor: 'bgColor'
+};
+
+exports.Prisma.ColumnOrderByRelevanceFieldEnum = {
+  title: 'title',
+  type: 'type',
+  textColor: 'textColor',
+  bgColor: 'bgColor'
+};
+
+exports.Prisma.InventoryProductOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  unit: 'unit',
+  lot: 'lot',
+  receipt: 'receipt'
+};
+
+exports.Prisma.InventoryProductHistoryOrderByRelevanceFieldEnum = {
+  notes: 'notes',
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.VendorOrderByRelevanceFieldEnum = {
+  name: 'name',
+  website: 'website',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  zip: 'zip',
+  companyName: 'companyName',
+  notes: 'notes'
+};
+
+exports.Prisma.inventoryWirehouseProductOrderByRelevanceFieldEnum = {
+  productName: 'productName',
+  category: 'category',
+  unit: 'unit'
+};
+
+exports.Prisma.InvoiceItemOrderByRelevanceFieldEnum = {
+  invoiceId: 'invoiceId',
+  serviceDesc: 'serviceDesc'
+};
+
+exports.Prisma.ServiceOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description'
+};
+
+exports.Prisma.MaterialOrderByRelevanceFieldEnum = {
+  name: 'name',
+  notes: 'notes',
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.LaborOrderByRelevanceFieldEnum = {
+  name: 'name',
+  notes: 'notes'
+};
+
+exports.Prisma.TagOrderByRelevanceFieldEnum = {
+  name: 'name',
+  textColor: 'textColor',
+  bgColor: 'bgColor'
+};
+
+exports.Prisma.InvoiceOrderByRelevanceFieldEnum = {
+  id: 'id',
+  fleetStatementId: 'fleetStatementId',
+  internalNotes: 'internalNotes',
+  dueDate: 'dueDate',
+  terms: 'terms',
+  policy: 'policy',
+  customerNotes: 'customerNotes',
+  customerComments: 'customerComments',
+  authorizedName: 'authorizedName',
+  stripePaymentLink: 'stripePaymentLink',
+  damageNotes: 'damageNotes'
+};
+
+exports.Prisma.InvoiceTagsOrderByRelevanceFieldEnum = {
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.InvoicePhotoOrderByRelevanceFieldEnum = {
+  invoiceId: 'invoiceId',
+  photo: 'photo'
+};
+
+exports.Prisma.RequestEstimateOrderByRelevanceFieldEnum = {
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.TechnicianOrderByRelevanceFieldEnum = {
+  status: 'status',
+  note: 'note',
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.InvoiceRedoOrderByRelevanceFieldEnum = {
+  invoiceId: 'invoiceId',
+  notes: 'notes'
+};
+
+exports.Prisma.InvoiceInspectionOrderByRelevanceFieldEnum = {
+  invoiceId: 'invoiceId',
+  title: 'title',
+  notes: 'notes'
+};
+
+exports.Prisma.MessageOrderByRelevanceFieldEnum = {
+  message: 'message'
+};
+
+exports.Prisma.ChatTrackOrderByRelevanceFieldEnum = {
+  lastMessage: 'lastMessage'
+};
+
+exports.Prisma.AttachmentOrderByRelevanceFieldEnum = {
+  fileName: 'fileName',
+  fileType: 'fileType',
+  fileUrl: 'fileUrl',
+  fileSize: 'fileSize'
+};
+
+exports.Prisma.GroupOrderByRelevanceFieldEnum = {
+  name: 'name',
+  type: 'type'
+};
+
+exports.Prisma.NotificationOrderByRelevanceFieldEnum = {
+  type: 'type',
+  title: 'title',
+  description: 'description',
+  avatarUrl: 'avatarUrl',
+  redirectUrl: 'redirectUrl'
+};
+
+exports.Prisma.PaymentOrderByRelevanceFieldEnum = {
+  notes: 'notes',
+  refundReason: 'refundReason',
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.RefundOrderByRelevanceFieldEnum = {
+  reason: 'reason',
+  notes: 'notes',
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.CardPaymentOrderByRelevanceFieldEnum = {
+  creditCard: 'creditCard'
+};
+
+exports.Prisma.CheckPaymentOrderByRelevanceFieldEnum = {
+  checkNumber: 'checkNumber'
+};
+
+exports.Prisma.CashPaymentOrderByRelevanceFieldEnum = {
+  receivedCash: 'receivedCash'
+};
+
+exports.Prisma.DepositPaymentOrderByRelevanceFieldEnum = {
+  depositMethod: 'depositMethod',
+  depositNotes: 'depositNotes'
+};
+
+exports.Prisma.StripePaymentOrderByRelevanceFieldEnum = {
+  stripePaymentIntentId: 'stripePaymentIntentId',
+  invoiceId: 'invoiceId'
+};
+
+exports.Prisma.PaymentMethodOrderByRelevanceFieldEnum = {
+  name: 'name'
+};
+
+exports.Prisma.CouponOrderByRelevanceFieldEnum = {
+  name: 'name',
+  code: 'code',
+  type: 'type'
+};
+
+exports.Prisma.TaskOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  invoiceId: 'invoiceId',
+  googleEventId: 'googleEventId'
+};
+
+exports.Prisma.TaskUserOrderByRelevanceFieldEnum = {
+  eventId: 'eventId'
+};
+
+exports.Prisma.UserFeedbackOrderByRelevanceFieldEnum = {
+  whatHappened: 'whatHappened',
+  whatExpected: 'whatExpected',
+  snapshotImage: 'snapshotImage'
+};
+
+exports.Prisma.UserFeedbackAttachmentOrderByRelevanceFieldEnum = {
+  fileName: 'fileName'
+};
+
+exports.Prisma.UserOrderByRelevanceFieldEnum = {
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'email',
+  image: 'image',
+  password: 'password',
+  timezone: 'timezone',
+  phone: 'phone',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  zip: 'zip',
+  companyName: 'companyName'
+};
+
+exports.Prisma.PasswordResetTokenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  token: 'token',
+  otp: 'otp'
+};
+
+exports.Prisma.OAuthTokenOrderByRelevanceFieldEnum = {
+  provider: 'provider',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken'
+};
+
+exports.Prisma.ClockInOutOrderByRelevanceFieldEnum = {
+  timezone: 'timezone'
+};
+
+exports.Prisma.ClientSMSOrderByRelevanceFieldEnum = {
+  message: 'message',
+  from: 'from',
+  to: 'to'
+};
+
+exports.Prisma.ClientCallOrderByRelevanceFieldEnum = {
+  callSid: 'callSid',
+  from: 'from',
+  to: 'to',
+  status: 'status',
+  direction: 'direction',
+  recordingUrl: 'recordingUrl',
+  recordingSid: 'recordingSid'
+};
+
+exports.Prisma.ClientSmsAttachmentsOrderByRelevanceFieldEnum = {
+  name: 'name',
+  url: 'url'
+};
+
+exports.Prisma.VehicleOrderByRelevanceFieldEnum = {
+  make: 'make',
+  model: 'model',
+  submodel: 'submodel',
+  type: 'type',
+  transmission: 'transmission',
+  engineSize: 'engineSize',
+  license: 'license',
+  vin: 'vin',
+  notes: 'notes',
+  other: 'other'
+};
+
+exports.Prisma.VehicleColorOrderByRelevanceFieldEnum = {
+  name: 'name'
+};
+
+exports.Prisma.VehiclePartsOrderByRelevanceFieldEnum = {
+  partsName: 'partsName',
+  invoiceId: 'invoiceId'
 };
 exports.ConditionType = exports.$Enums.ConditionType = {
   APPOINTMENT_SCHEDULED: 'APPOINTMENT_SCHEDULED',

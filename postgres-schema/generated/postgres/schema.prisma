@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("POSTGRESQL_DATABASE_URL")
 }
 
@@ -1727,7 +1727,6 @@ model User {
   companyId         Int                @map("company_id")
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at")
-  refreshToken      String?            @map("refresh_token")
   company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   groups            Group[]            @relation("UserGroups")
   tasks             Task[]
