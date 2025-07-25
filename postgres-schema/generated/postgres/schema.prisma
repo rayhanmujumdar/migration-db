@@ -109,7 +109,7 @@ model TimeDelayExecution {
   pipelineRule              PipelineAutomationRule?           @relation(fields: [pipelineRuleId], references: [id], onDelete: SetNull)
   communicationRule         CommunicationAutomationRule?      @relation(fields: [communicationRuleId], references: [id], onDelete: SetNull)
   serviceMaintenanceRule    ServiceMaintenanceAutomationRule? @relation(fields: [serviceMaintenanceRuleId], references: [id], onDelete: SetNull)
-  InvoiceAutomationRule     InvoiceAutomationRule?            @relation(fields: [invoiceAutomationRuleId], references: [id])
+  InvoiceAutomationRule     InvoiceAutomationRule?            @relation(fields: [invoiceAutomationRuleId], references: [id], onDelete: SetNull)
   InventoryAutomationRule   InventoryAutomationRule?          @relation(fields: [inventoryAutomationRuleId], references: [id])
   inventoryAutomationRuleId Int?
 
@@ -128,6 +128,7 @@ model CommunicationAutomationRule {
   targetColumnId     Int? // Target column/stage where lead will move to
   communicationType  CommunicationType
   isSendWeekDays     Boolean                @default(false)
+  isSendOfficeHours  Boolean                @default(false)
   templateType       TemplateType
   subject            String?
   emailBody          String?                @db.Text
@@ -226,11 +227,26 @@ model InvoiceAutomationRule {
   attachments        AutomationAttachment[] @relation("InvoiceAttachments")
   company            Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   timeDelayExecution TimeDelayExecution[]
-  Column             Column?                @relation(fields: [columnId], references: [id])
-  columnId           Int?
   createdBy          String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
+  Column             Column?                @relation(fields: [columnId], references: [id])
+  columnId           Int?
+}
+
+model AutomationAttachment {
+  id                   Int                               @id @default(autoincrement())
+  fileUrl              String
+  communicationId      Int?
+  marketingId          Int?
+  serviceMaintenanceId Int?
+  invoiceId            Int?
+  communication        CommunicationAutomationRule?      @relation("CommunicationAttachments", fields: [communicationId], references: [id])
+  marketing            MarketingAutomationRule?          @relation("MarketingAttachments", fields: [marketingId], references: [id])
+  serviceMaintenance   ServiceMaintenanceAutomationRule? @relation("ServiceMaintenanceAttachments", fields: [serviceMaintenanceId], references: [id])
+  invoice              InvoiceAutomationRule?            @relation("InvoiceAttachments", fields: [invoiceId], references: [id])
+  createdAt            DateTime                          @default(now())
+  updatedAt            DateTime                          @updatedAt
 }
 
 model InventoryAutomationRule {
@@ -259,21 +275,6 @@ model InventoryAutomationTeamMember {
   user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([inventoryRuleId, userId])
-}
-
-model AutomationAttachment {
-  id                   Int                               @id @default(autoincrement())
-  fileUrl              String
-  communicationId      Int?
-  marketingId          Int?
-  serviceMaintenanceId Int?
-  invoiceId            Int?
-  communication        CommunicationAutomationRule?      @relation("CommunicationAttachments", fields: [communicationId], references: [id])
-  marketing            MarketingAutomationRule?          @relation("MarketingAttachments", fields: [marketingId], references: [id])
-  serviceMaintenance   ServiceMaintenanceAutomationRule? @relation("ServiceMaintenanceAttachments", fields: [serviceMaintenanceId], references: [id])
-  invoice              InvoiceAutomationRule?            @relation("InvoiceAttachments", fields: [invoiceId], references: [id])
-  createdAt            DateTime                          @default(now())
-  updatedAt            DateTime                          @updatedAt
 }
 
 // Enums
@@ -448,6 +449,7 @@ model ClientConversationTrack {
   smsUnReadCount     Int       @default(0) @map("sms_unread_count")
   emailLastMessage   String    @default("no message") @map("email_last_message")
   smsLastMessage     String    @default("no message") @map("sms_last_message")
+  lastMessageBy      String?   @map("last_message_by")
   sendAt             DateTime? @map("send_at")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
@@ -546,6 +548,8 @@ model Company {
   Refund                           Refund[]
   InvoiceAutomationRule            InvoiceAutomationRule[]
   inventoryAutomationRule          InventoryAutomationRule[]
+  companyPermissionModules         CompanyPermissionModule[]
+  BugReport                        BugReport[]
 }
 
 // create model that will handle multiple companies join and collaboration
@@ -636,6 +640,7 @@ model Lead {
   leadTags            LeadTags[]
   serviceId           Int?
   Service             Service?   @relation(fields: [serviceId], references: [id])
+  clientId            Int?
 
   Client              Client[]
   TimeDelayExecutions TimeDelayExecution[]
@@ -719,7 +724,7 @@ model TwilioCredentials {
   id Int @id @default(autoincrement())
 
   accountSid     String  @map("account_sid")
-  authToken      String  @map("auth_token")
+  authToken      String? @map("auth_token")
   phoneNumber    String  @map("phone_number")
   apiKeySid      String  @map("api_key_sid")
   apiKeySecret   String  @map("api_key_secret")
@@ -761,7 +766,7 @@ model MailgunEmail {
   id Int @id @default(autoincrement())
 
   subject     String
-  text        String                   @db.Text
+  text        String                   @db.LongText
   attachments MailgunEmailAttachment[]
   emailBy     EMAIL_BY
 
@@ -1360,15 +1365,17 @@ model ChatTrack {
 }
 
 model Attachment {
-  id        Int      @id @default(autoincrement())
-  fileName  String // File name (e.g., 'image.png')
-  fileType  String // File type (e.g., 'image/png', 'application/pdf')
-  fileUrl   String // File storage path or URL
-  fileSize  String
-  messageId Int // Foreign key to Message model, enforces one-to-one relationship
-  message   Message  @relation(fields: [messageId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  id                 Int               @id @default(autoincrement())
+  fileName           String // File name (e.g., 'image.png')
+  fileType           String // File type (e.g., 'image/png', 'application/pdf')
+  fileUrl            String // File storage path or URL
+  fileSize           String
+  messageId          Int? // Foreign key to Message model, enforces one-to-one relationship
+  bugReportMessageId Int?
+  message            Message?          @relation(fields: [messageId], references: [id])
+  bugReportMessage   BugReportMessage? @relation(fields: [bugReportMessageId], references: [id])
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @default(now()) @updatedAt @map("updated_at")
 }
 
 model Group {
@@ -1379,6 +1386,35 @@ model Group {
   messages  Message[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+}
+
+model BugReport {
+  id               Int                @id @default(autoincrement())
+  companyId        Int
+  isResolved       Boolean?           @default(false)
+  company          Company            @relation(fields: [companyId], references: [id])
+  BugReportMessage BugReportMessage[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updatedAt")
+}
+
+model BugReportMessage {
+  id          Int          @id @default(autoincrement())
+  bugReportId Int
+  subject     String?
+  content     String       @db.Text
+  senderType  UserType
+  userId      Int
+  isRead      Boolean      @default(false)
+  attachment  Attachment[] // Relation to Attachment
+  bugReport   BugReport    @relation(fields: [bugReportId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updatedAt")
+}
+
+enum UserType {
+  super_admin
+  company
 }
 
 // notification settings model
@@ -1633,6 +1669,26 @@ enum DiscountType {
   Fixed
 }
 
+// Permission Module System for Super Admin
+// Simple permission system with predefined modules
+
+model CompanyPermissionModule {
+  id        Int @id @default(autoincrement())
+  companyId Int @map("company_id")
+
+  permission_name String
+  title           String
+  enabled         Boolean
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, permission_name])
+}
+
 // Task for a company.
 model Task {
   id            Int        @id @default(autoincrement())
@@ -1718,6 +1774,9 @@ model User {
   city              String?
   state             String?
   zip               String?
+  salaryType        SalaryType?        @map("salary_type")
+  salaryAmount      Decimal?           @map("salary_amount") @db.Decimal(10, 2)
+  salaryStartedAt   DateTime?          @map("salary_started_at")
   companyName       String?            @map("company_name")
   commission        Decimal?           @default(0) @db.Decimal(10, 3)
   role              Role               @default(admin)
@@ -1757,11 +1816,18 @@ model User {
   @@index([companyId], name: "fk_users_company")
 }
 
+enum SalaryType {
+  HOURLY
+  BI_WEEKLY
+  WEEKLY
+  MONTHLY
+}
+
 model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique
   otp       String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int      @unique @map("user_id")
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")

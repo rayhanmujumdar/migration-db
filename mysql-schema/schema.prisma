@@ -55,6 +55,7 @@ model AppointmentUser {
 
   @@index([appointmentId])
 }
+
 // Pipeline Automation Schema
 
 model PipelineAutomationRule {
@@ -89,29 +90,28 @@ model PipelineStage {
 }
 
 model TimeDelayExecution {
-  id                       Int                               @id @default(autoincrement())
-  pipelineRuleId           Int?
-  communicationRuleId      Int?
-  leadId                   Int?
-  estimateId               String?
-  serviceMaintenanceRuleId Int?
-  invoiceAutomationRuleId  Int?
-  lead                     Lead?                             @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  estimate                 Invoice?                          @relation(fields: [estimateId], references: [id], onDelete: Cascade)
-  executeAt                DateTime
-  status                   ExecutionStatus                   @default(PENDING)
-  jobId                    String?
-  createdAt                DateTime                          @default(now())
-  updatedAt                DateTime                          @updatedAt
-  columnId                 Int?
-  column                   Column?                           @relation(fields: [columnId], references: [id])
-  pipelineRule             PipelineAutomationRule?           @relation(fields: [pipelineRuleId], references: [id], onDelete: SetNull)
-  communicationRule        CommunicationAutomationRule?      @relation(fields: [communicationRuleId], references: [id], onDelete: SetNull)
-  serviceMaintenanceRule   ServiceMaintenanceAutomationRule? @relation(fields: [serviceMaintenanceRuleId], references: [id], onDelete: SetNull)
-  InvoiceAutomationRule    InvoiceAutomationRule?            @relation(fields: [invoiceAutomationRuleId], references: [id])
-  InventoryAutomationRule  InventoryAutomationRule?          @relation(fields: [inventoryAutomationRuleId], references: [id])
+  id                        Int                               @id @default(autoincrement())
+  pipelineRuleId            Int?
+  communicationRuleId       Int?
+  leadId                    Int?
+  estimateId                String?
+  serviceMaintenanceRuleId  Int?
+  invoiceAutomationRuleId   Int?
+  lead                      Lead?                             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  estimate                  Invoice?                          @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  executeAt                 DateTime
+  status                    ExecutionStatus                   @default(PENDING)
+  jobId                     String?
+  createdAt                 DateTime                          @default(now())
+  updatedAt                 DateTime                          @updatedAt
+  columnId                  Int?
+  column                    Column?                           @relation(fields: [columnId], references: [id])
+  pipelineRule              PipelineAutomationRule?           @relation(fields: [pipelineRuleId], references: [id], onDelete: SetNull)
+  communicationRule         CommunicationAutomationRule?      @relation(fields: [communicationRuleId], references: [id], onDelete: SetNull)
+  serviceMaintenanceRule    ServiceMaintenanceAutomationRule? @relation(fields: [serviceMaintenanceRuleId], references: [id], onDelete: SetNull)
+  InvoiceAutomationRule     InvoiceAutomationRule?            @relation(fields: [invoiceAutomationRuleId], references: [id], onDelete: SetNull)
+  InventoryAutomationRule   InventoryAutomationRule?          @relation(fields: [inventoryAutomationRuleId], references: [id])
   inventoryAutomationRuleId Int?
-
 
   @@index([executeAt, status])
   @@index([pipelineRuleId])
@@ -128,6 +128,7 @@ model CommunicationAutomationRule {
   targetColumnId     Int? // Target column/stage where lead will move to
   communicationType  CommunicationType
   isSendWeekDays     Boolean                @default(false)
+  isSendOfficeHours  Boolean                @default(false)
   templateType       TemplateType
   subject            String?
   emailBody          String?                @db.Text
@@ -226,38 +227,11 @@ model InvoiceAutomationRule {
   attachments        AutomationAttachment[] @relation("InvoiceAttachments")
   company            Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   timeDelayExecution TimeDelayExecution[]
-  Column             Column?                @relation(fields: [columnId], references: [id])
-  columnId           Int?
   createdBy          String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
-}
-model InventoryAutomationRule {
-  id                 Int                            @id @default(autoincrement())
-  title              String
-  companyId          Int
-  frequency          InventoryAutomationFrequency
-  day                DayOfWeek?                     // Only required when frequency is WEEKLY
-  condition          InventoryCondition
-  action             InventoryNotificationAction
-  isPaused           Boolean                        @default(false)
-  createdBy          String?
-  createdAt          DateTime                       @default(now())
-  updatedAt          DateTime                       @updatedAt
-  company            Company                        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  teamMembers        InventoryAutomationTeamMember[]
-  timeDelayExecution TimeDelayExecution[]
-
-  @@index([companyId])
-}
-
-model InventoryAutomationTeamMember {
-  inventoryRuleId Int
-  userId          Int
-  inventoryRule   InventoryAutomationRule @relation(fields: [inventoryRuleId], references: [id], onDelete: Cascade)
-  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([inventoryRuleId, userId])
+  Column             Column?                @relation(fields: [columnId], references: [id])
+  columnId           Int?
 }
 
 model AutomationAttachment {
@@ -275,6 +249,33 @@ model AutomationAttachment {
   updatedAt            DateTime                          @updatedAt
 }
 
+model InventoryAutomationRule {
+  id                 Int                             @id @default(autoincrement())
+  title              String
+  companyId          Int
+  frequency          InventoryAutomationFrequency
+  day                DayOfWeek? // Only required when frequency is WEEKLY
+  condition          InventoryCondition
+  action             InventoryNotificationAction
+  isPaused           Boolean                         @default(false)
+  createdBy          String?
+  createdAt          DateTime                        @default(now())
+  updatedAt          DateTime                        @updatedAt
+  company            Company                         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  teamMembers        InventoryAutomationTeamMember[]
+  timeDelayExecution TimeDelayExecution[]
+
+  @@index([companyId])
+}
+
+model InventoryAutomationTeamMember {
+  inventoryRuleId Int
+  userId          Int
+  inventoryRule   InventoryAutomationRule @relation(fields: [inventoryRuleId], references: [id], onDelete: Cascade)
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([inventoryRuleId, userId])
+}
 
 // Enums
 enum CommunicationType {
@@ -447,6 +448,7 @@ model ClientConversationTrack {
   smsUnReadCount     Int       @default(0) @map("sms_unread_count")
   emailLastMessage   String    @default("no message") @map("email_last_message")
   smsLastMessage     String    @default("no message") @map("sms_last_message")
+  lastMessageBy      String?    @map("last_message_by")
   sendAt             DateTime? @map("send_at")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
@@ -544,6 +546,8 @@ model Company {
   Refund                           Refund[]
   InvoiceAutomationRule            InvoiceAutomationRule[]
   inventoryAutomationRule          InventoryAutomationRule[]
+  companyPermissionModules         CompanyPermissionModule[]
+  BugReport                        BugReport[]
 }
 
 // create model that will handle multiple companies join and collaboration
@@ -634,6 +638,7 @@ model Lead {
   leadTags            LeadTags[]
   serviceId           Int?
   Service             Service?   @relation(fields: [serviceId], references: [id])
+  clientId            Int?
 
   Client              Client[]
   TimeDelayExecutions TimeDelayExecution[]
@@ -717,7 +722,7 @@ model TwilioCredentials {
   id Int @id @default(autoincrement())
 
   accountSid     String  @map("account_sid")
-  authToken      String  @map("auth_token")
+  authToken      String? @map("auth_token")
   phoneNumber    String  @map("phone_number")
   apiKeySid      String  @map("api_key_sid")
   apiKeySecret   String  @map("api_key_secret")
@@ -855,6 +860,7 @@ model Column {
   @@index([type])
   @@index([type, companyId])
 }
+
 model InventoryProduct {
   id                      Int                       @id @default(autoincrement())
   name                    String
@@ -1092,7 +1098,7 @@ model Tag {
   InvoiceTags         InvoiceTags[]
   InventoryProductTag InventoryProductTag[]
   leadTags            LeadTags[]
-  
+
   @@index([companyId, type]) // NEW: Index for better query performance
 }
 
@@ -1128,10 +1134,10 @@ model LaborTag {
 
 // NEW: Enum for tag types
 enum TagType {
-  GENERAL    // For invoice items, materials, labor
-  SALES      // For sales/leads
-  CLIENT     // For clients
-  INVENTORY  // For inventory products
+  GENERAL // For invoice items, materials, labor
+  SALES // For sales/leads
+  CLIENT // For clients
+  INVENTORY // For inventory products
 }
 // Invoice of a company.
 // Note that `Invoice` is same as `Estimate`. So don't get confused.
@@ -1200,7 +1206,6 @@ model Invoice {
   TimeDelayExecution      TimeDelayExecution[]
   Refund                  Refund[]
   FleetStatement          FleetStatement?           @relation(fields: [fleetStatementId], references: [id])
-  
 
   @@index([companyId], name: "fk_invoices_company")
   @@index([companyId, type])
@@ -1354,15 +1359,17 @@ model ChatTrack {
 }
 
 model Attachment {
-  id        Int      @id @default(autoincrement())
-  fileName  String // File name (e.g., 'image.png')
-  fileType  String // File type (e.g., 'image/png', 'application/pdf')
-  fileUrl   String // File storage path or URL
-  fileSize  String
-  messageId Int // Foreign key to Message model, enforces one-to-one relationship
-  message   Message  @relation(fields: [messageId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  id                 Int               @id @default(autoincrement())
+  fileName           String // File name (e.g., 'image.png')
+  fileType           String // File type (e.g., 'image/png', 'application/pdf')
+  fileUrl            String // File storage path or URL
+  fileSize           String
+  messageId          Int? // Foreign key to Message model, enforces one-to-one relationship
+  bugReportMessageId Int?
+  message            Message?          @relation(fields: [messageId], references: [id])
+  bugReportMessage   BugReportMessage? @relation(fields: [bugReportMessageId], references: [id])
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @default(now()) @updatedAt @map("updated_at")
 }
 
 model Group {
@@ -1374,6 +1381,36 @@ model Group {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
 }
+
+model BugReport {
+  id               Int                @id @default(autoincrement())
+  companyId        Int
+  isResolved       Boolean?           @default(false)
+  company          Company            @relation(fields: [companyId], references: [id])
+  BugReportMessage BugReportMessage[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updatedAt")
+}
+
+model BugReportMessage {
+  id          Int          @id @default(autoincrement())
+  bugReportId Int
+  subject     String?
+  content     String       @db.Text
+  senderType  UserType
+  userId      Int
+  isRead      Boolean      @default(false)
+  attachment  Attachment[] // Relation to Attachment
+  bugReport   BugReport    @relation(fields: [bugReportId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updatedAt")
+}
+
+enum UserType {
+  super_admin
+  company
+}
+
 // notification settings model
 model NotificationSettingsV2 {
   id                Int                 @id @default(autoincrement())
@@ -1624,6 +1661,25 @@ enum DiscountType {
   Percentage
   Fixed
 }
+// Permission Module System for Super Admin
+// Simple permission system with predefined modules
+
+model CompanyPermissionModule {
+  id        Int @id @default(autoincrement())
+  companyId Int @map("company_id")
+
+  permission_name String
+  title           String
+  enabled         Boolean
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, permission_name])
+}
 // Task for a company.
 model Task {
   id            Int        @id @default(autoincrement())
@@ -1707,11 +1763,14 @@ model User {
   city              String?
   state             String?
   zip               String?
+  salaryType        SalaryType?        @map("salary_type")
+  salaryAmount      Decimal?           @map("salary_amount") @db.Decimal(10, 2)
+  salaryStartedAt   DateTime?          @map("salary_started_at")
   companyName       String?            @map("company_name")
   commission        Decimal?           @default(0) @db.Decimal(10, 3)
   role              Role               @default(admin)
   employeeType      EmployeeType       @default(Admin)
-  isSuperAdmin    Boolean            @default(false) @map("is_super_admin")
+  isSuperAdmin      Boolean            @default(false) @map("is_super_admin")
   joinDate          DateTime?          @map("join_date")
   companyId         Int                @map("company_id")
   createdAt         DateTime           @default(now()) @map("created_at")
@@ -1736,21 +1795,28 @@ model User {
   ClientSMS         ClientSMS[]
   ClientCall        ClientCall[]
 
-  salesLead            Lead[]
-  NotificationSettings NotificationSettingsV2[]
-  Notification         Notification[]
-  resetToken           PasswordResetToken?
-  Refund               Refund[]
+  salesLead                      Lead[]
+  NotificationSettings           NotificationSettingsV2[]
+  Notification                   Notification[]
+  resetToken                     PasswordResetToken?
+  Refund                         Refund[]
   inventoryAutomationTeamMembers InventoryAutomationTeamMember[]
 
   @@index([companyId], name: "fk_users_company")
+}
+
+enum SalaryType {
+  HOURLY
+  BI_WEEKLY
+  WEEKLY
+  MONTHLY
 }
 
 model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique
   otp       String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int      @unique @map("user_id")
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
@@ -1763,6 +1829,7 @@ model OAuthToken {
   userId       Int       @unique @map("user_id")
   provider     String
   accessToken  String    @map("access_token")
+  refreshToken String?   @map("refresh_token")
   expiresIn    DateTime? @map("expires_in")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")

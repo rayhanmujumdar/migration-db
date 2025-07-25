@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.11.1
- * Query Engine version: f40f79ec31188888a2e33acda0ecc8fd10a853a9
+ * Prisma Client JS version: 6.12.0
+ * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
  */
 Prisma.prismaVersion = {
-  client: "6.11.1",
-  engine: "f40f79ec31188888a2e33acda0ecc8fd10a853a9"
+  client: "6.12.0",
+  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -195,6 +195,7 @@ exports.Prisma.CommunicationAutomationRuleScalarFieldEnum = {
   targetColumnId: 'targetColumnId',
   communicationType: 'communicationType',
   isSendWeekDays: 'isSendWeekDays',
+  isSendOfficeHours: 'isSendOfficeHours',
   templateType: 'templateType',
   subject: 'subject',
   emailBody: 'emailBody',
@@ -269,8 +270,19 @@ exports.Prisma.InvoiceAutomationRuleScalarFieldEnum = {
   emailBody: 'emailBody',
   smsBody: 'smsBody',
   emailSubject: 'emailSubject',
-  columnId: 'columnId',
   createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  columnId: 'columnId'
+};
+
+exports.Prisma.AutomationAttachmentScalarFieldEnum = {
+  id: 'id',
+  fileUrl: 'fileUrl',
+  communicationId: 'communicationId',
+  marketingId: 'marketingId',
+  serviceMaintenanceId: 'serviceMaintenanceId',
+  invoiceId: 'invoiceId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -292,17 +304,6 @@ exports.Prisma.InventoryAutomationRuleScalarFieldEnum = {
 exports.Prisma.InventoryAutomationTeamMemberScalarFieldEnum = {
   inventoryRuleId: 'inventoryRuleId',
   userId: 'userId'
-};
-
-exports.Prisma.AutomationAttachmentScalarFieldEnum = {
-  id: 'id',
-  fileUrl: 'fileUrl',
-  communicationId: 'communicationId',
-  marketingId: 'marketingId',
-  serviceMaintenanceId: 'serviceMaintenanceId',
-  invoiceId: 'invoiceId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ClientScalarFieldEnum = {
@@ -375,6 +376,7 @@ exports.Prisma.ClientConversationTrackScalarFieldEnum = {
   smsUnReadCount: 'smsUnReadCount',
   emailLastMessage: 'emailLastMessage',
   smsLastMessage: 'smsLastMessage',
+  lastMessageBy: 'lastMessageBy',
   sendAt: 'sendAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -477,7 +479,8 @@ exports.Prisma.LeadScalarFieldEnum = {
   isLead: 'isLead',
   isQualified: 'isQualified',
   isEstimateCreated: 'isEstimateCreated',
-  serviceId: 'serviceId'
+  serviceId: 'serviceId',
+  clientId: 'clientId'
 };
 
 exports.Prisma.LeadTagsScalarFieldEnum = {
@@ -883,6 +886,7 @@ exports.Prisma.AttachmentScalarFieldEnum = {
   fileUrl: 'fileUrl',
   fileSize: 'fileSize',
   messageId: 'messageId',
+  bugReportMessageId: 'bugReportMessageId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -891,6 +895,26 @@ exports.Prisma.GroupScalarFieldEnum = {
   id: 'id',
   name: 'name',
   type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BugReportScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  isResolved: 'isResolved',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BugReportMessageScalarFieldEnum = {
+  id: 'id',
+  bugReportId: 'bugReportId',
+  subject: 'subject',
+  content: 'content',
+  senderType: 'senderType',
+  userId: 'userId',
+  isRead: 'isRead',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1021,6 +1045,16 @@ exports.Prisma.CouponScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CompanyPermissionModuleScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  permission_name: 'permission_name',
+  title: 'title',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.TaskScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -1082,6 +1116,9 @@ exports.Prisma.UserScalarFieldEnum = {
   city: 'city',
   state: 'state',
   zip: 'zip',
+  salaryType: 'salaryType',
+  salaryAmount: 'salaryAmount',
+  salaryStartedAt: 'salaryStartedAt',
   companyName: 'companyName',
   commission: 'commission',
   role: 'role',
@@ -1387,13 +1424,13 @@ exports.Prisma.InvoiceAutomationRuleOrderByRelevanceFieldEnum = {
   createdBy: 'createdBy'
 };
 
+exports.Prisma.AutomationAttachmentOrderByRelevanceFieldEnum = {
+  fileUrl: 'fileUrl'
+};
+
 exports.Prisma.InventoryAutomationRuleOrderByRelevanceFieldEnum = {
   title: 'title',
   createdBy: 'createdBy'
-};
-
-exports.Prisma.AutomationAttachmentOrderByRelevanceFieldEnum = {
-  fileUrl: 'fileUrl'
 };
 
 exports.Prisma.ClientOrderByRelevanceFieldEnum = {
@@ -1426,7 +1463,8 @@ exports.Prisma.SourceOrderByRelevanceFieldEnum = {
 
 exports.Prisma.ClientConversationTrackOrderByRelevanceFieldEnum = {
   emailLastMessage: 'emailLastMessage',
-  smsLastMessage: 'smsLastMessage'
+  smsLastMessage: 'smsLastMessage',
+  lastMessageBy: 'lastMessageBy'
 };
 
 exports.Prisma.CompanyOrderByRelevanceFieldEnum = {
@@ -1665,6 +1703,11 @@ exports.Prisma.GroupOrderByRelevanceFieldEnum = {
   type: 'type'
 };
 
+exports.Prisma.BugReportMessageOrderByRelevanceFieldEnum = {
+  subject: 'subject',
+  content: 'content'
+};
+
 exports.Prisma.NotificationOrderByRelevanceFieldEnum = {
   type: 'type',
   title: 'title',
@@ -1715,6 +1758,11 @@ exports.Prisma.CouponOrderByRelevanceFieldEnum = {
   name: 'name',
   code: 'code',
   type: 'type'
+};
+
+exports.Prisma.CompanyPermissionModuleOrderByRelevanceFieldEnum = {
+  permission_name: 'permission_name',
+  title: 'title'
 };
 
 exports.Prisma.TaskOrderByRelevanceFieldEnum = {
@@ -1934,6 +1982,11 @@ exports.MessageSection = exports.$Enums.MessageSection = {
   collaboration: 'collaboration'
 };
 
+exports.UserType = exports.$Enums.UserType = {
+  super_admin: 'super_admin',
+  company: 'company'
+};
+
 exports.NotificationSection = exports.$Enums.NotificationSection = {
   CALENDAR_AND_TASK: 'CALENDAR_AND_TASK',
   LEAD_GENERATED_AND_SALES_PIPELINE: 'LEAD_GENERATED_AND_SALES_PIPELINE',
@@ -2015,6 +2068,13 @@ exports.Provider = exports.$Enums.Provider = {
   email: 'email'
 };
 
+exports.SalaryType = exports.$Enums.SalaryType = {
+  HOURLY: 'HOURLY',
+  BI_WEEKLY: 'BI_WEEKLY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
 exports.Role = exports.$Enums.Role = {
   admin: 'admin',
   employee: 'employee'
@@ -2045,9 +2105,9 @@ exports.Prisma.ModelName = {
   ServiceMaintenanceAutomationRule: 'ServiceMaintenanceAutomationRule',
   ServiceMaintenanceStage: 'ServiceMaintenanceStage',
   InvoiceAutomationRule: 'InvoiceAutomationRule',
+  AutomationAttachment: 'AutomationAttachment',
   InventoryAutomationRule: 'InventoryAutomationRule',
   InventoryAutomationTeamMember: 'InventoryAutomationTeamMember',
-  AutomationAttachment: 'AutomationAttachment',
   Client: 'Client',
   Fleet: 'Fleet',
   FleetStatement: 'FleetStatement',
@@ -2095,6 +2155,8 @@ exports.Prisma.ModelName = {
   ChatTrack: 'ChatTrack',
   Attachment: 'Attachment',
   Group: 'Group',
+  BugReport: 'BugReport',
+  BugReportMessage: 'BugReportMessage',
   NotificationSettingsV2: 'NotificationSettingsV2',
   Notification: 'Notification',
   Payment: 'Payment',
@@ -2107,6 +2169,7 @@ exports.Prisma.ModelName = {
   StripePayment: 'StripePayment',
   PaymentMethod: 'PaymentMethod',
   Coupon: 'Coupon',
+  CompanyPermissionModule: 'CompanyPermissionModule',
   Task: 'Task',
   TaskUser: 'TaskUser',
   UserFeedback: 'UserFeedback',
